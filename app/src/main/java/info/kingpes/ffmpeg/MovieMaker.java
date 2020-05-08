@@ -19,11 +19,12 @@ public class MovieMaker {
     private Context context;
     private ArrayList<File> images;
     private File audio;
+    private File video;
     private String outputPath;
     private String outputFileName;
     private FFMpegCallback callback;
 
-    private MovieMaker(Context context){
+    private MovieMaker(Context context) {
         this.context = context;
     }
 
@@ -31,37 +32,113 @@ public class MovieMaker {
         return new MovieMaker(context);
     }
 
-    private MovieMaker setFile(ArrayList<File> originalFiles){
+    private MovieMaker setFile(ArrayList<File> originalFiles) {
         this.images = originalFiles;
         return this;
     }
 
-    public MovieMaker setAudio(File originalFile){
+    public MovieMaker setAudio(File originalFile) {
         this.audio = originalFile;
         return this;
     }
 
-    public MovieMaker setCallback(FFMpegCallback callback){
+    public MovieMaker setVideo(File originalFile) {
+        this.video = originalFile;
+        return this;
+    }
+
+    public MovieMaker setCallback(FFMpegCallback callback) {
         this.callback = callback;
         return this;
     }
 
-    public MovieMaker setOutputPath(String output){
+    public MovieMaker setOutputPath(String output) {
         this.outputPath = output;
         return this;
     }
 
-    public MovieMaker setOutputFileName(String output){
+    public MovieMaker setOutputFileName(String output) {
         this.outputFileName = output;
         return this;
     }
 
 
-    public void convert(){
+    public void convert() {
 
         final File outputLocation = Utils.getConvertedFile(outputPath, outputFileName);
 
         String[] cmd = new String[21];
+        cmd[0] = "-analyzeduration";
+        cmd[1] = "1M";
+        cmd[2] = "-probesize";
+        cmd[3] = "1M";
+        cmd[4] = "-y";
+        cmd[5] = "-framerate";
+        cmd[6] = "1/3.79";
+        cmd[7] = "-i";
+        cmd[8] = Utils.getOutputPath() + "image%d.png";
+        cmd[9] = "-i";
+        cmd[10] = audio.getPath();
+        cmd[11] = "-c:v";
+        cmd[12] = "libx264";
+        cmd[13] = "-r";
+        cmd[14] = "5";
+        cmd[15] = "-pix_fmt";
+        cmd[16] = "yuv420p";
+        cmd[17] = "-c:a";
+        cmd[18] = "aac";
+        cmd[19] = "-shortest";
+        cmd[20] = outputLocation.getPath();
+
+        try {
+            FFmpeg.getInstance(context).execute(cmd, new ExecuteBinaryResponseHandler() {
+                @Override
+                public void onStart() {
+                    super.onStart();
+                }
+
+                @Override
+                public void onProgress(String message) {
+                    super.onProgress(message);
+                    callback.onProgress(message);
+                }
+
+                @Override
+                public void onSuccess(String message) {
+                    super.onSuccess(message);
+                    Utils.refreshGallery(outputLocation.getPath(), context);
+                    callback.onSuccess(outputLocation, "video");
+                }
+
+                @Override
+                public void onFailure(String message) {
+                    super.onFailure(message);
+                    if (outputLocation.exists()) {
+                        outputLocation.delete();
+                    }
+                    callback.onFailure(new IOException(message));
+                }
+
+                @Override
+                public void onFinish() {
+                    super.onFinish();
+                    callback.onFinish();
+                }
+            });
+        } catch (FFmpegCommandAlreadyRunningException e) {
+            e.printStackTrace();
+            callback.onFailure(e);
+        }
+    }
+
+    public void merger() {
+        //ffmpeg -i video.mp4 -i genaudio.mp3 -map 0:v -map 1:a -c:v copy -c:a copy output.mp4 -y
+
+        //ffmpeg -i video.mp4 -i audio.wav -c:v copy -c:a aac output.mp4
+
+        final File outputLocation = Utils.getConvertedFile(outputPath, outputFileName);
+
+        /*String[] cmd = new String[21];
         cmd[0] = "-analyzeduration";
         cmd[1] = "1M";
         cmd[2] = "-probesize";
@@ -82,10 +159,12 @@ public class MovieMaker {
         cmd[17] ="-c:a";
         cmd[18] ="aac";
         cmd[19] ="-shortest";
-        cmd[20] = outputLocation.getPath();
+        cmd[20] = outputLocation.getPath();*/
+
+        String[] cmd = {"-i", audio.getPath(), "-i", video.getPath(), "-c:v", "copy", "-c:a", "aac", outputLocation.getPath()};
 
         try {
-            FFmpeg.getInstance(context).execute(cmd, new ExecuteBinaryResponseHandler(){
+            FFmpeg.getInstance(context).execute(cmd, new ExecuteBinaryResponseHandler() {
                 @Override
                 public void onStart() {
                     super.onStart();
