@@ -6,6 +6,27 @@
     android:layout_height="match_parent"
     tools:context="info.kingpes.ffmpeg.MainActivity">
 
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@id/btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btnGoto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="GoTo"
+        app:layout_constraintBottom_toTopOf="@id/btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/text" />
+
+
     <Button
         android:id="@+id/btn"
         android:layout_width="wrap_content"
@@ -21,9 +42,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Merge"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/mergeAudio"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btn" />
+
+
+    <Button
+        android:id="@+id/mergeAudio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="MergeAudio"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/merge" />
 
 </android.support.constraint.ConstraintLayout>
